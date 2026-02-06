@@ -2,8 +2,19 @@ class ResearchPaperSearch {
     constructor() {
         this.currentPage = 1;
         this.totalResults = 0;
+        this.totalPages = 0;
         this.searchHistory = [];
         this.currentResults = [];
+        this.currentQuery = '';
+        this.currentFilters = {};
+        
+        // CrossRef API Configuration
+        this.crossrefConfig = {
+            baseUrl: 'https://api.crossref.org/works',
+            mailto: 'vishwajeetsurvase28@gmail.com', // Your email for polite usage
+            rows: 20, // Default rows per page
+            timeout: 10000 // 10 second timeout
+        };
         
         this.init();
     }
@@ -11,6 +22,7 @@ class ResearchPaperSearch {
     init() {
         this.bindEvents();
         this.loadSearchHistory();
+        this.updateEmptyState();
     }
     
     bindEvents() {
@@ -42,14 +54,25 @@ class ResearchPaperSearch {
                 this.closeModal();
             }
         });
+        
+        // Results per page change
+        document.getElementById('resultsPerPage').addEventListener('change', () => {
+            this.currentPage = 1;
+            if (this.currentQuery) {
+                this.performSearch();
+            }
+        });
     }
     
     async performSearch() {
         const query = document.getElementById('searchInput').value.trim();
         if (!query) {
-            alert('Please enter a search term');
+            this.showMessage('Please enter a search term', 'warning');
             return;
         }
+        
+        this.currentQuery = query;
+        this.currentPage = 1;
         
         // Show loading
         this.showLoading(true);
@@ -59,9 +82,14 @@ class ResearchPaperSearch {
         
         // Get filters
         const filters = this.getFilters();
+        this.currentFilters = filters;
         
-        // Simulate API call (in real implementation, call actual APIs)
-        await this.simulateSearch(query, filters);
+        // Perform real API search
+        try {
+            await this.searchCrossRef(query, filters);
+        } catch (error) {
+            this.handleSearchError(error);
+        }
         
         // Update UI
         this.updateResultsUI();
@@ -69,92 +97,167 @@ class ResearchPaperSearch {
     }
     
     getFilters() {
+        const yearFrom = document.getElementById('yearFrom').value;
+        const yearTo = document.getElementById('yearTo').value;
+        
         return {
-            yearFrom: document.getElementById('yearFrom').value,
-            yearTo: document.getElementById('yearTo').value,
+            yearFrom: yearFrom,
+            yearTo: yearTo,
             sortBy: document.getElementById('sortBy').value,
-            databases: Array.from(document.querySelectorAll('input[name="database"]:checked'))
-                .map(db => db.value)
+            resultsPerPage: parseInt(document.getElementById('resultsPerPage').value)
         };
     }
     
-    async simulateSearch(query, filters) {
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
+    async searchCrossRef(query, filters) {
+        // Build query parameters
+        const params = new URLSearchParams({
+            query: query,
+            rows: filters.resultsPerPage || this.crossrefConfig.rows,
+            offset: (this.currentPage - 1) * (filters.resultsPerPage || this.crossrefConfig.rows),
+            mailto: this.crossrefConfig.mailto,
+            select: 'DOI,title,author,abstract,published-print,published-online,is-referenced-by-count,URL,subject,container-title'
+        });
         
-        // Generate mock data
-        this.currentResults = this.generateMockResults(query, filters);
-        this.totalResults = 42; // Mock total
+        // Add sorting
+        if (filters.sortBy === 'newest') {
+            params.append('sort', 'published');
+            params.append('order', 'desc');
+        } else if (filters.sortBy === 'oldest') {
+            params.append('sort', 'published');
+            params.append('order', 'asc');
+        }
         
-        this.updateFiltersDisplay(filters);
+        // Add year filter if provided
+        if (filters.yearFrom || filters.yearTo) {
+            let yearFilter = '';
+            if (filters.yearFrom) yearFilter += filters.yearFrom;
+            yearFilter += '-';
+            if (filters.yearTo) yearFilter += filters.yearTo;
+            params.append('filter', `from-pub-date:${yearFilter}`);
+        }
+        
+        // Show loading with query info
+        document.getElementById('resultsStats').textContent = `Searching for "${query}"...`;
+        
+        // Make API request with timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), this.crossrefConfig.timeout);
+        
+        try {
+            const response = await fetch(`${this.crossrefConfig.baseUrl}?${params}`, {
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+            
+            if (!response.ok) {
+                throw new Error(`API error: ${response.status} ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            
+            // Update results
+            this.currentResults = this.parseCrossRefResults(data.message.items || []);
+            this.totalResults = data.message['total-results'] || 0;
+            this.totalPages = Math.ceil(this.totalResults / (filters.resultsPerPage || this.crossrefConfig.rows));
+            
+            // Update filters display
+            this.updateFiltersDisplay(filters);
+            
+        } catch (error) {
+            if (error.name === 'AbortError') {
+                throw new Error('Request timed out. Please try again.');
+            }
+            throw error;
+        }
     }
     
-    generateMockResults(query, filters) {
-        const mockTitles = [
-            `A Comprehensive Study of ${query} in Modern Applications`,
-            `Deep Learning Approaches for ${query}`,
-            `${query}: Recent Advances and Future Directions`,
-            `The Impact of ${query} on Computational Methods`,
-            `Novel Techniques in ${query} Research`,
-            `Comparative Analysis of ${query} Methodologies`,
-            `${query} and its Applications in Healthcare`,
-            `Survey of ${query} Approaches`
-        ];
-        
-        const mockAuthors = [
-            "Smith, J.; Johnson, A.; Williams, R.",
-            "Chen, L.; Wang, H.; Zhang, Y.",
-            "Miller, T.; Brown, K.; Davis, M.",
-            "Garcia, M.; Rodriguez, P.; Martinez, S.",
-            "Kim, S.; Park, J.; Lee, H.",
-            "Taylor, B.; Anderson, C.; Thomas, E."
-        ];
-        
-        const mockAbstract = `This paper presents a comprehensive analysis of ${query}, exploring various methodologies and applications. The research investigates key challenges and proposes novel solutions that demonstrate significant improvements over existing approaches. Our findings suggest promising directions for future work in this rapidly evolving field.`;
-        
-        const results = [];
-        const resultsPerPage = 10;
-        const startIndex = (this.currentPage - 1) * resultsPerPage;
-        
-        for (let i = 0; i < resultsPerPage; i++) {
-            const year = 2015 + Math.floor(Math.random() * 9);
-            const citations = Math.floor(Math.random() * 500);
+    parseCrossRefResults(items) {
+        return items.map((item, index) => {
+            // Extract year from publication date
+            let year = 'N/A';
+            if (item['published-print'] && item['published-print']['date-parts']) {
+                year = item['published-print']['date-parts'][0][0];
+            } else if (item['published-online'] && item['published-online']['date-parts']) {
+                year = item['published-online']['date-parts'][0][0];
+            }
             
-            results.push({
-                id: `paper-${startIndex + i + 1}`,
-                title: mockTitles[Math.floor(Math.random() * mockTitles.length)],
-                authors: mockAuthors[Math.floor(Math.random() * mockAuthors.length)],
-                abstract: mockAbstract,
+            // Extract authors
+            let authors = 'Unknown authors';
+            if (item.author && item.author.length > 0) {
+                authors = item.author.map(author => {
+                    if (author.given && author.family) {
+                        return `${author.given} ${author.family}`;
+                    } else if (author.name) {
+                        return author.name;
+                    }
+                    return '';
+                }).filter(name => name).join(', ');
+            }
+            
+            // Extract title
+            let title = 'Untitled';
+            if (item.title && item.title.length > 0) {
+                title = item.title[0];
+            }
+            
+            // Extract abstract (if available)
+            let abstract = 'No abstract available.';
+            if (item.abstract) {
+                // Remove HTML tags if present
+                abstract = item.abstract.replace(/<[^>]*>/g, '');
+            }
+            
+            // Get citation count
+            const citations = item['is-referenced-by-count'] || 0;
+            
+            // Get journal name
+            const journal = item['container-title'] && item['container-title'][0] ? item['container-title'][0] : 'Unknown Journal';
+            
+            // Generate PDF URL (not all papers have PDFs, but we can link to DOI)
+            const pdfUrl = item.URL || `https://doi.org/${item.DOI}`;
+            
+            return {
+                id: `paper-${index}-${item.DOI || Date.now()}`,
+                title: title,
+                authors: authors,
+                abstract: abstract,
                 year: year,
                 citations: citations,
-                source: filters.databases[Math.floor(Math.random() * filters.databases.length)],
-                url: `https://arxiv.org/abs/${Date.now()}-${i}`,
-                doi: `10.1234/arxiv.${Date.now()}-${i}`,
-                pdfUrl: `https://arxiv.org/pdf/${Date.now()}-${i}.pdf`
-            });
-        }
-        
-        // Apply sorting
-        this.applySorting(results, filters.sortBy);
-        
-        return results;
+                source: 'crossref',
+                url: item.URL || `https://doi.org/${item.DOI}`,
+                doi: item.DOI || 'No DOI available',
+                pdfUrl: pdfUrl,
+                journal: journal,
+                subjects: item.subject || [],
+                demo: false // Real data from API
+            };
+        });
     }
     
-    applySorting(results, sortBy) {
-        switch (sortBy) {
-            case 'newest':
-                results.sort((a, b) => b.year - a.year);
-                break;
-            case 'oldest':
-                results.sort((a, b) => a.year - b.year);
-                break;
-            case 'citations':
-                results.sort((a, b) => b.citations - a.citations);
-                break;
-            default:
-                // relevance (default) - keep as is
-                break;
-        }
+    handleSearchError(error) {
+        console.error('Search error:', error);
+        this.showMessage(`Search failed: ${error.message}`, 'error');
+        
+        // Clear results
+        this.currentResults = [];
+        this.totalResults = 0;
+        this.totalPages = 0;
+    }
+    
+    showMessage(message, type = 'info') {
+        const container = document.getElementById('resultsContainer');
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `error-message ${type === 'error' ? 'error' : 'warning'}`;
+        messageDiv.innerHTML = `
+            <i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+            <h3>${type === 'error' ? 'Error' : 'Notice'}</h3>
+            <p>${message}</p>
+            ${type === 'error' ? '<p>Please try a different search term or try again later.</p>' : ''}
+        `;
+        
+        container.innerHTML = '';
+        container.appendChild(messageDiv);
     }
     
     updateResultsUI() {
@@ -164,21 +267,32 @@ class ResearchPaperSearch {
         const pagination = document.getElementById('pagination');
         
         // Update counts
-        const start = (this.currentPage - 1) * 10 + 1;
-        const end = Math.min(start + 9, this.totalResults);
-        countElement.textContent = `Search Results for "${document.getElementById('searchInput').value}"`;
-        statsElement.textContent = `Showing ${start}-${end} of ${this.totalResults} papers`;
+        const resultsPerPage = parseInt(document.getElementById('resultsPerPage').value);
+        const start = (this.currentPage - 1) * resultsPerPage + 1;
+        const end = Math.min(start + resultsPerPage - 1, this.totalResults);
+        
+        countElement.textContent = `Search Results for "${this.currentQuery}"`;
+        statsElement.textContent = `Showing ${start}-${end} of ${this.totalResults.toLocaleString()} papers`;
         
         // Clear previous results
         container.innerHTML = '';
         
-        // Show results
+        // Show results or no results message
         if (this.currentResults.length === 0) {
             container.innerHTML = `
-                <div class="empty-state">
+                <div class="no-results">
                     <i class="fas fa-search fa-3x"></i>
                     <h3>No Results Found</h3>
-                    <p>Try different keywords or adjust your filters.</p>
+                    <p>No papers found for "${this.currentQuery}". Try different keywords or adjust your filters.</p>
+                    <div class="tips">
+                        <h4>Search Suggestions:</h4>
+                        <ul>
+                            <li>Try more general keywords</li>
+                            <li>Check spelling</li>
+                            <li>Remove year filters</li>
+                            <li>Search for specific authors</li>
+                        </ul>
+                    </div>
                 </div>
             `;
             pagination.style.display = 'none';
@@ -191,9 +305,13 @@ class ResearchPaperSearch {
             container.appendChild(paperCard);
         });
         
-        // Show pagination
-        pagination.style.display = 'flex';
-        this.updatePaginationButtons();
+        // Show pagination if there are multiple pages
+        if (this.totalPages > 1) {
+            pagination.style.display = 'flex';
+            this.updatePaginationButtons();
+        } else {
+            pagination.style.display = 'none';
+        }
     }
     
     createPaperCard(paper) {
@@ -201,22 +319,28 @@ class ResearchPaperSearch {
         card.className = 'paper-card';
         card.dataset.id = paper.id;
         
+        // Truncate abstract for card view
+        const truncatedAbstract = paper.abstract.length > 250 
+            ? paper.abstract.substring(0, 250) + '...' 
+            : paper.abstract;
+        
         card.innerHTML = `
-            <h3 class="paper-title">${paper.title}</h3>
-            <div class="paper-authors">${paper.authors}</div>
-            <p class="paper-abstract">${paper.abstract}</p>
+            <h3 class="paper-title">${this.escapeHtml(paper.title)}</h3>
+            <div class="paper-authors">${this.escapeHtml(paper.authors)}</div>
+            <div class="paper-journal"><i class="fas fa-book"></i> ${this.escapeHtml(paper.journal)}</div>
+            <p class="paper-abstract">${this.escapeHtml(truncatedAbstract)}</p>
             <div class="paper-meta">
                 <div class="paper-info">
                     <span><i class="fas fa-calendar"></i> ${paper.year}</span>
                     <span><i class="fas fa-quote-right"></i> ${paper.citations} citations</span>
-                    <span><i class="fas fa-database"></i> ${paper.source.toUpperCase()}</span>
+                    <span><i class="fas fa-database"></i> CrossRef</span>
                 </div>
                 <div class="paper-actions">
                     <button class="action-btn view-details" data-id="${paper.id}">
                         <i class="fas fa-info-circle"></i> Details
                     </button>
                     <button class="action-btn primary view-pdf" data-url="${paper.pdfUrl}">
-                        <i class="fas fa-file-pdf"></i> PDF
+                        <i class="fas fa-external-link-alt"></i> View
                     </button>
                 </div>
             </div>
@@ -230,7 +354,9 @@ class ResearchPaperSearch {
         
         card.querySelector('.view-pdf').addEventListener('click', (e) => {
             e.stopPropagation();
-            window.open(paper.pdfUrl, '_blank');
+            if (paper.pdfUrl) {
+                window.open(paper.pdfUrl, '_blank');
+            }
         });
         
         card.addEventListener('click', () => this.showPaperDetails(paper));
@@ -242,45 +368,103 @@ class ResearchPaperSearch {
         const modal = document.getElementById('paperModal');
         const modalBody = document.getElementById('modalBody');
         
+        // Format subjects
+        const subjectsHtml = paper.subjects && paper.subjects.length > 0 
+            ? `<p><strong>Subjects:</strong> ${paper.subjects.join(', ')}</p>`
+            : '';
+        
         modalBody.innerHTML = `
             <div class="modal-section">
-                <h3>Title</h3>
-                <p>${paper.title}</p>
+                <h3><i class="fas fa-book"></i> Title</h3>
+                <p>${this.escapeHtml(paper.title)}</p>
             </div>
             <div class="modal-section">
-                <h3>Authors</h3>
-                <p>${paper.authors}</p>
+                <h3><i class="fas fa-users"></i> Authors</h3>
+                <p>${this.escapeHtml(paper.authors)}</p>
             </div>
             <div class="modal-section">
-                <h3>Abstract</h3>
-                <p>${paper.abstract}</p>
+                <h3><i class="fas fa-newspaper"></i> Journal</h3>
+                <p>${this.escapeHtml(paper.journal)}</p>
             </div>
             <div class="modal-section">
-                <h3>Publication Details</h3>
+                <h3><i class="fas fa-align-left"></i> Abstract</h3>
+                <p>${this.escapeHtml(paper.abstract)}</p>
+            </div>
+            <div class="modal-section">
+                <h3><i class="fas fa-info-circle"></i> Publication Details</h3>
                 <p><strong>Year:</strong> ${paper.year}</p>
                 <p><strong>Citations:</strong> ${paper.citations}</p>
-                <p><strong>Source:</strong> ${paper.source.toUpperCase()}</p>
+                <p><strong>Source:</strong> CrossRef</p>
                 <p><strong>DOI:</strong> ${paper.doi}</p>
+                ${subjectsHtml}
             </div>
             <div class="modal-actions">
-                <button class="action-btn primary" onclick="window.open('${paper.pdfUrl}', '_blank')">
-                    <i class="fas fa-file-pdf"></i> View PDF
+                <button class="action-btn primary" id="viewPaperBtn">
+                    <i class="fas fa-external-link-alt"></i> View Paper
                 </button>
-                <button class="action-btn" onclick="window.open('${paper.url}', '_blank')">
-                    <i class="fas fa-external-link-alt"></i> Source Page
-                </button>
-                <button class="action-btn" onclick="this.copyDOI('${paper.doi}')">
+                <button class="action-btn" id="copyDoiBtn">
                     <i class="fas fa-copy"></i> Copy DOI
+                </button>
+                <button class="action-btn" id="citePaperBtn">
+                    <i class="fas fa-quote-right"></i> Cite
                 </button>
             </div>
         `;
         
+        // Add event listeners for modal buttons
+        modalBody.querySelector('#viewPaperBtn').addEventListener('click', () => {
+            if (paper.url) window.open(paper.url, '_blank');
+        });
+        
+        modalBody.querySelector('#copyDoiBtn').addEventListener('click', () => {
+            this.copyDOI(paper.doi);
+        });
+        
+        modalBody.querySelector('#citePaperBtn').addEventListener('click', () => {
+            this.showCitation(paper);
+        });
+        
         modal.style.display = 'flex';
     }
     
+    showCitation(paper) {
+        // Generate APA citation
+        const apaCitation = `${paper.authors.split(',')[0]}. (${paper.year}). ${paper.title}. ${paper.journal}.`;
+        
+        // Show citation in alert (could be enhanced with a modal)
+        alert(`APA Citation:\n\n${apaCitation}\n\nDOI: ${paper.doi}`);
+    }
+    
     copyDOI(doi) {
+        if (!doi || doi === 'No DOI available') {
+            alert('No DOI available for this paper');
+            return;
+        }
+        
         navigator.clipboard.writeText(doi).then(() => {
-            alert(`DOI copied to clipboard: ${doi}`);
+            // Show success notification
+            const notification = document.createElement('div');
+            notification.className = 'copy-notification';
+            notification.textContent = `DOI copied: ${doi}`;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: var(--success-color);
+                color: white;
+                padding: 12px 24px;
+                border-radius: var(--radius-md);
+                z-index: 10000;
+                box-shadow: var(--shadow-lg);
+            `;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 3000);
+        }).catch(err => {
+            console.error('Failed to copy DOI:', err);
+            alert(`Failed to copy DOI: ${doi}`);
         });
     }
     
@@ -294,22 +478,41 @@ class ResearchPaperSearch {
         const pageInfo = document.getElementById('pageInfo');
         
         prevBtn.disabled = this.currentPage === 1;
-        nextBtn.disabled = this.currentPage * 10 >= this.totalResults;
-        pageInfo.textContent = `Page ${this.currentPage}`;
+        nextBtn.disabled = this.currentPage >= this.totalPages;
+        pageInfo.textContent = `Page ${this.currentPage} of ${this.totalPages}`;
     }
     
     prevPage() {
         if (this.currentPage > 1) {
             this.currentPage--;
-            this.performSearch();
+            this.performSearchWithCurrentParams();
         }
     }
     
     nextPage() {
-        if (this.currentPage * 10 < this.totalResults) {
+        if (this.currentPage < this.totalPages) {
             this.currentPage++;
-            this.performSearch();
+            this.performSearchWithCurrentParams();
         }
+    }
+    
+    async performSearchWithCurrentParams() {
+        this.showLoading(true);
+        
+        try {
+            await this.searchCrossRef(this.currentQuery, this.currentFilters);
+        } catch (error) {
+            this.handleSearchError(error);
+        }
+        
+        this.updateResultsUI();
+        this.showLoading(false);
+        
+        // Scroll to top of results
+        document.querySelector('.results-section').scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+        });
     }
     
     updateFiltersDisplay(filters) {
@@ -322,8 +525,11 @@ class ResearchPaperSearch {
             yearFilter.innerHTML = `
                 <i class="fas fa-calendar"></i>
                 Years: ${filters.yearFrom || 'Any'} - ${filters.yearTo || 'Any'}
-                <button onclick="this.removeYearFilter()">&times;</button>
+                <button class="remove-year-filter">&times;</button>
             `;
+            yearFilter.querySelector('.remove-year-filter').addEventListener('click', () => {
+                this.removeYearFilter();
+            });
             container.appendChild(yearFilter);
         }
         
@@ -333,8 +539,11 @@ class ResearchPaperSearch {
             sortFilter.innerHTML = `
                 <i class="fas fa-sort-amount-down"></i>
                 Sorted by: ${filters.sortBy}
-                <button onclick="this.removeSortFilter()">&times;</button>
+                <button class="remove-sort-filter">&times;</button>
             `;
+            sortFilter.querySelector('.remove-sort-filter').addEventListener('click', () => {
+                this.removeSortFilter();
+            });
             container.appendChild(sortFilter);
         }
     }
@@ -342,12 +551,17 @@ class ResearchPaperSearch {
     removeYearFilter() {
         document.getElementById('yearFrom').value = '';
         document.getElementById('yearTo').value = '';
-        this.performSearch();
+        this.currentFilters.yearFrom = '';
+        this.currentFilters.yearTo = '';
+        this.currentPage = 1;
+        this.performSearchWithCurrentParams();
     }
     
     removeSortFilter() {
         document.getElementById('sortBy').value = 'relevance';
-        this.performSearch();
+        this.currentFilters.sortBy = 'relevance';
+        this.currentPage = 1;
+        this.performSearchWithCurrentParams();
     }
     
     showLoading(show) {
@@ -363,26 +577,57 @@ class ResearchPaperSearch {
         }
     }
     
+    updateEmptyState() {
+        // Update initial empty state to show API status
+        const container = document.getElementById('resultsContainer');
+        if (container.children.length === 1) {
+            const emptyState = container.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.querySelector('.api-status').innerHTML = `
+                    <h4><i class="fas fa-plug"></i> API Status: <span class="status-active">Connected</span></h4>
+                    <p>Ready to search millions of academic papers via CrossRef API</p>
+                    <p><small>Email for polite use: ${this.crossrefConfig.mailto}</small></p>
+                `;
+            }
+        }
+    }
+    
     addToSearchHistory(query) {
-        this.searchHistory.unshift({
+        const now = new Date();
+        const searchItem = {
             query: query,
-            timestamp: new Date().toISOString()
-        });
+            timestamp: now.toISOString(),
+            displayTime: now.toLocaleString()
+        };
         
-        // Keep only last 10 searches
-        this.searchHistory = this.searchHistory.slice(0, 10);
+        this.searchHistory.unshift(searchItem);
+        this.searchHistory = this.searchHistory.slice(0, 20);
         this.saveSearchHistory();
     }
     
     saveSearchHistory() {
-        localStorage.setItem('researchSearchHistory', JSON.stringify(this.searchHistory));
+        try {
+            localStorage.setItem('researchSearchHistory', JSON.stringify(this.searchHistory));
+        } catch (e) {
+            console.warn('Could not save search history:', e);
+        }
     }
     
     loadSearchHistory() {
-        const saved = localStorage.getItem('researchSearchHistory');
-        if (saved) {
-            this.searchHistory = JSON.parse(saved);
+        try {
+            const saved = localStorage.getItem('researchSearchHistory');
+            if (saved) {
+                this.searchHistory = JSON.parse(saved);
+            }
+        } catch (e) {
+            console.warn('Could not load search history:', e);
         }
+    }
+    
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 }
 
@@ -390,8 +635,6 @@ class ResearchPaperSearch {
 document.addEventListener('DOMContentLoaded', () => {
     const searchApp = new ResearchPaperSearch();
     
-    // Make methods available globally for inline onclick handlers
+    // Make copyDOI available globally
     window.copyDOI = (doi) => searchApp.copyDOI(doi);
-    window.removeYearFilter = () => searchApp.removeYearFilter();
-    window.removeSortFilter = () => searchApp.removeSortFilter();
 });
