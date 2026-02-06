@@ -12,6 +12,8 @@
     --primary-dark: #1d4ed8;
     --secondary-color: #7c3aed;
     --accent-color: #0ea5e9;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
     --text-primary: #1e293b;
     --text-secondary: #475569;
     --text-tertiary: #64748b;
@@ -255,7 +257,7 @@ body {
     font-size: 1.1rem;
 }
 
-#sortBy {
+#sortBy, #resultsPerPage {
     width: 100%;
     padding: 18px;
     border: 2px solid var(--border-color);
@@ -273,7 +275,7 @@ body {
     background-size: 20px;
 }
 
-#sortBy:focus {
+#sortBy:focus, #resultsPerPage:focus {
     outline: none;
     border-color: var(--accent-color);
     box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
@@ -559,6 +561,38 @@ body {
     color: var(--primary-color);
     font-weight: bold;
     font-size: 1.2rem;
+}
+
+.api-status {
+    margin-top: 40px;
+    padding: 20px;
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border-radius: var(--radius-md);
+    border: 2px solid #86efac;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.api-status h4 {
+    font-size: 1.3rem;
+    color: var(--text-primary);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.status-active {
+    color: var(--success-color);
+    font-weight: 800;
+}
+
+.api-status p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    line-height: 1.6;
 }
 
 /* Enhanced Paper Card */
@@ -887,6 +921,48 @@ body {
     margin-top: 32px;
     padding-top: 32px;
     border-top: 2px solid var(--border-color);
+}
+
+/* Error States */
+.error-message {
+    background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+    border: 2px solid #fca5a5;
+    border-radius: var(--radius-md);
+    padding: 24px;
+    margin: 20px 0;
+    color: #991b1b;
+    text-align: center;
+}
+
+.error-message i {
+    font-size: 2rem;
+    margin-bottom: 16px;
+    display: block;
+}
+
+.no-results {
+    text-align: center;
+    padding: 60px 40px;
+    color: var(--text-tertiary);
+}
+
+.no-results i {
+    font-size: 4rem;
+    margin-bottom: 24px;
+    color: #cbd5e1;
+}
+
+.no-results h3 {
+    font-size: 1.8rem;
+    margin-bottom: 16px;
+    color: var(--text-secondary);
+}
+
+.no-results p {
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
 }
 
 /* Responsive Design */
