@@ -15,7 +15,7 @@
                 <i class="fas fa-search"></i>
                 <h1>Research Paper Search</h1>
             </div>
-            <p class="subtitle">Search millions of academic papers from arXiv, PubMed, IEEE, and more</p>
+            <p class="subtitle">Search millions of academic papers from CrossRef and other academic databases</p>
         </header>
 
         <main class="main-content">
@@ -46,25 +46,28 @@
                                     <option value="relevance">Relevance</option>
                                     <option value="newest">Newest</option>
                                     <option value="oldest">Oldest</option>
-                                    <option value="citations">Most Cited</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label for="resultsPerPage"><i class="fas fa-file"></i> Results per page</label>
+                                <select id="resultsPerPage">
+                                    <option value="10">10</option>
+                                    <option value="20" selected>20</option>
+                                    <option value="30">30</option>
+                                    <option value="50">50</option>
                                 </select>
                             </div>
                         </div>
                         
                         <div class="database-filters">
-                            <span><i class="fas fa-database"></i> Databases:</span>
+                            <span><i class="fas fa-database"></i> Database:</span>
                             <label class="checkbox-label">
-                                <input type="checkbox" name="database" value="arxiv" checked> arXiv
+                                <input type="checkbox" name="database" value="crossref" checked disabled> CrossRef
                             </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="database" value="pubmed" checked> PubMed
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="database" value="ieee"> IEEE
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" name="database" value="crossref"> Crossref
-                            </label>
+                            <small style="color: var(--text-tertiary); margin-left: 20px;">
+                                <i class="fas fa-info-circle"></i> Using CrossRef API with real academic papers
+                            </small>
                         </div>
                     </div>
                 </div>
@@ -73,9 +76,12 @@
                     <span>Quick topics:</span>
                     <button class="topic-btn" data-topic="machine learning">Machine Learning</button>
                     <button class="topic-btn" data-topic="artificial intelligence">AI</button>
+                    <button class="topic-btn" data-topic="climate change">Climate Change</button>
                     <button class="topic-btn" data-topic="cancer research">Cancer Research</button>
                     <button class="topic-btn" data-topic="renewable energy">Renewable Energy</button>
                     <button class="topic-btn" data-topic="quantum computing">Quantum Computing</button>
+                    <button class="topic-btn" data-topic="covid-19">COVID-19</button>
+                    <button class="topic-btn" data-topic="blockchain">Blockchain</button>
                 </div>
             </div>
 
@@ -86,7 +92,7 @@
                         <span id="resultsStats">Enter a search term to begin</span>
                         <div class="loading-spinner" id="loadingSpinner" style="display: none;">
                             <div class="spinner"></div>
-                            <span>Searching databases...</span>
+                            <span>Searching CrossRef database...</span>
                         </div>
                     </div>
                 </div>
@@ -97,15 +103,20 @@
                     <div class="empty-state">
                         <i class="fas fa-search fa-3x"></i>
                         <h3>Search Research Papers</h3>
-                        <p>Enter keywords, topics, or paper titles to search across multiple academic databases.</p>
+                        <p>Enter keywords, topics, or paper titles to search across millions of academic papers.</p>
                         <div class="tips">
                             <h4>Search Tips:</h4>
                             <ul>
                                 <li>Use specific keywords for better results</li>
                                 <li>Try author names for finding specific papers</li>
                                 <li>Filter by year range to find recent publications</li>
+                                <li>Use quotes for exact phrase matching</li>
                                 <li>Combine keywords with AND/OR (e.g., "AI AND healthcare")</li>
                             </ul>
+                        </div>
+                        <div class="api-status">
+                            <h4><i class="fas fa-plug"></i> API Status: <span class="status-active">Active</span></h4>
+                            <p>Connected to CrossRef API with real academic data</p>
                         </div>
                     </div>
                 </div>
@@ -123,8 +134,12 @@
         </main>
         
         <footer class="footer">
-            <p>Powered by arXiv, PubMed, Crossref, and other academic APIs</p>
-            <p class="disclaimer">This tool is for academic research purposes only. Always verify information from original sources.</p>
+            <p>Powered by <strong>CrossRef API</strong> - Accessing millions of academic papers</p>
+            <p class="disclaimer">
+                <i class="fas fa-info-circle"></i> This tool uses the CrossRef API for academic research purposes. 
+                Always verify information from original sources. 
+                Polite use: vishwajeetsurvase28@gmail.com
+            </p>
         </footer>
     </div>
     
