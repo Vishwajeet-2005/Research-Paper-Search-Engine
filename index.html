@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Research Paper Search Engine</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Source+Sans+Pro:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-search"></i>
+                <h1>Research Paper Search</h1>
+            </div>
+            <p class="subtitle">Search millions of academic papers from arXiv, PubMed, IEEE, and more</p>
+        </header>
+
+        <main class="main-content">
+            <div class="search-section">
+                <div class="search-box">
+                    <div class="search-input-group">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Enter research topic, keywords, or paper title...">
+                        <button id="searchBtn" class="search-btn">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                    
+                    <div class="advanced-options">
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label for="yearFilter"><i class="fas fa-calendar"></i> Year Range</label>
+                                <div class="range-inputs">
+                                    <input type="number" id="yearFrom" placeholder="From" min="1900" max="2024">
+                                    <span>to</span>
+                                    <input type="number" id="yearTo" placeholder="To" min="1900" max="2024">
+                                </div>
+                            </div>
+                            
+                            <div class="filter-group">
+                                <label for="sortBy"><i class="fas fa-sort"></i> Sort by</label>
+                                <select id="sortBy">
+                                    <option value="relevance">Relevance</option>
+                                    <option value="newest">Newest</option>
+                                    <option value="oldest">Oldest</option>
+                                    <option value="citations">Most Cited</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="database-filters">
+                            <span><i class="fas fa-database"></i> Databases:</span>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="database" value="arxiv" checked> arXiv
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="database" value="pubmed" checked> PubMed
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="database" value="ieee"> IEEE
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="database" value="crossref"> Crossref
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="quick-topics">
+                    <span>Quick topics:</span>
+                    <button class="topic-btn" data-topic="machine learning">Machine Learning</button>
+                    <button class="topic-btn" data-topic="artificial intelligence">AI</button>
+                    <button class="topic-btn" data-topic="cancer research">Cancer Research</button>
+                    <button class="topic-btn" data-topic="renewable energy">Renewable Energy</button>
+                    <button class="topic-btn" data-topic="quantum computing">Quantum Computing</button>
+                </div>
+            </div>
+
+            <div class="results-section">
+                <div class="results-header">
+                    <h2 id="resultsCount">Search Results</h2>
+                    <div class="results-stats">
+                        <span id="resultsStats">Enter a search term to begin</span>
+                        <div class="loading-spinner" id="loadingSpinner" style="display: none;">
+                            <div class="spinner"></div>
+                            <span>Searching databases...</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="filters-applied" id="filtersApplied"></div>
+                
+                <div class="results-container" id="resultsContainer">
+                    <div class="empty-state">
+                        <i class="fas fa-search fa-3x"></i>
+                        <h3>Search Research Papers</h3>
+                        <p>Enter keywords, topics, or paper titles to search across multiple academic databases.</p>
+                        <div class="tips">
+                            <h4>Search Tips:</h4>
+                            <ul>
+                                <li>Use specific keywords for better results</li>
+                                <li>Try author names for finding specific papers</li>
+                                <li>Filter by year range to find recent publications</li>
+                                <li>Combine keywords with AND/OR (e.g., "AI AND healthcare")</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="pagination" id="pagination" style="display: none;">
+                    <button id="prevBtn" class="pagination-btn" disabled>
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </button>
+                    <span id="pageInfo">Page 1</span>
+                    <button id="nextBtn" class="pagination-btn">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="footer">
+            <p>Powered by arXiv, PubMed, Crossref, and other academic APIs</p>
+            <p class="disclaimer">This tool is for academic research purposes only. Always verify information from original sources.</p>
+        </footer>
+    </div>
+    
+    <!-- Paper Details Modal -->
+    <div class="modal" id="paperModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Paper Details</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Paper details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
