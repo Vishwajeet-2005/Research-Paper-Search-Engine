@@ -1,15 +1,12 @@
-# Research-Paper-Search-Engine
-Website for searching for relevant research papers.
 # 📚 Research Paper Search Engine
 
-![Research Paper Search Engine](https://img.shields.io/badge/Status-Active-brightgreen)
+![Research Paper Search Engine](https://img.shields.io/badge/Status-Fully%20Functional-brightgreen)
 ![Vercel](https://img.shields.io/badge/Deployed_on-Vercel-black)
 ![License](https://img.shields.io/badge/License-MIT-blue)
-![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-yellow)
-![HTML5](https://img.shields.io/badge/HTML5-E34F26-orange)
-![CSS3](https://img.shields.io/badge/CSS3-1572B6-blue)
+![Mobile-Friendly](https://img.shields.io/badge/Mobile-Friendly-4285F4)
+![API](https://img.shields.io/badge/API-CrossRef-007AFF)
 
-A modern, responsive web application for searching academic research papers across multiple databases with an intuitive interface and powerful filtering capabilities.
+A modern, fully functional web application for searching real academic research papers using the CrossRef API with a beautiful, mobile-first responsive design.
 
 ## ✨ Live Demo
 
@@ -17,39 +14,45 @@ A modern, responsive web application for searching academic research papers acro
 
 ## 🎯 Features
 
-### 🔍 **Advanced Search**
-- Multi-database search (arXiv, PubMed, IEEE, Crossref)
-- Real-time search with instant results
-- Boolean search support (AND, OR, NOT)
-- Field-specific searching (title, author, abstract)
+### 🔍 **Real-Time Search**
+- **CrossRef API Integration** - Real academic papers from millions of publications
+- **Full-text search** across titles, abstracts, and authors
+- **No mock data** - All results are real academic papers
+- **Polite API usage** with proper attribution
 
-### 🎛️ **Smart Filtering**
-- Publication year range filtering
-- Multiple database selection
-- Sort by relevance, date, or citation count
-- Live filter tags with quick removal
+### 📱 **Mobile-First Design**
+- **Fully responsive** - Works perfectly on all screen sizes
+- **Touch-optimized** - Large buttons and easy navigation
+- **Progressive enhancement** - Better experience on capable devices
+- **Safe area support** - Properly handles iPhone notches and home indicators
 
-### 📱 **Modern UI/UX**
-- Clean, responsive design with large typography
-- Dark/light theme ready
-- Paper cards with hover effects
-- Modal-based detailed view
-- Mobile-optimized interface
+### 🎛️ **Advanced Search Features**
+- **Year range filtering** - Find papers from specific time periods
+- **Sorting options** - Relevance, newest, oldest
+- **Results customization** - Choose 10-50 results per page
+- **Quick topics** - One-tap access to popular research areas
 
 ### 📊 **Paper Management**
-- View detailed paper information
-- Direct PDF access
-- DOI copying with one click
-- Export options (CSV, BibTeX - coming soon)
-- Search history tracking
+- **Detailed paper view** - Complete metadata in a beautiful modal
+- **Direct paper access** - Open original papers with one click
+- **DOI copying** - Copy DOI to clipboard with visual feedback
+- **Citation generator** - APA format citations for papers
+- **Citation counts** - See how often papers are cited
+
+### 💡 **Enhanced UX**
+- **Loading states** - Clear feedback during searches
+- **Error handling** - Helpful error messages with suggestions
+- **Search history** - Local storage for recent searches
+- **Pagination** - Smooth navigation through results
+- **Keyboard shortcuts** - Enter key for quick searching
 
 ## 🏗️ Architecture
 
 ```
 📁 Research-Paper-Search-Engine/
-├── 📄 index.html          # Main HTML structure
-├── 🎨 style.css           # Enhanced CSS styling
-├── ⚡ script.js           # Core JavaScript logic
+├── 📄 index.html          # Main HTML structure (updated for mobile)
+├── 🎨 style.css           # Mobile-first responsive CSS
+├── ⚡ script.js           # CrossRef API integration
 └── 📄 README.md          # This documentation
 ```
 
@@ -57,7 +60,7 @@ A modern, responsive web application for searching academic research papers acro
 
 ### Prerequisites
 - Modern web browser (Chrome, Firefox, Safari, Edge)
-- Basic understanding of web development (for customization)
+- Internet connection (for API calls)
 
 ### Local Development
 1. **Clone the repository**
@@ -82,137 +85,78 @@ A modern, responsive web application for searching academic research papers acro
    - Apply filters as needed
    - Click on papers for detailed view
 
-## 🛠️ How It Works
+## 🛠️ Technology Stack
 
-### 1. **Search Flow**
-```mermaid
-graph LR
-    A[User Input] --> B[Query Processing]
-    B --> C[API Integration]
-    C --> D[Results Display]
-    D --> E[Filter Application]
-    E --> F[Final Results]
-```
+### **Frontend**
+- **HTML5** - Semantic markup
+- **CSS3** - Custom properties, Grid, Flexbox, Media Queries
+- **Vanilla JavaScript** - No frameworks, pure performance
 
-### 2. **API Integration**
-The application is designed to integrate with multiple academic APIs:
+### **API Integration**
+- **CrossRef REST API** - Academic paper search
+- **Fetch API** - Modern HTTP requests
+- **Async/Await** - Clean asynchronous code
 
-| Database | API Status | Rate Limits | Key Required |
-|----------|------------|-------------|--------------|
-| **arXiv** | ✅ Ready | None | No |
-| **PubMed** | ⚙️ Planned | 3 requests/sec | No |
-| **CrossRef** | ⚙️ Planned | Polite use policy | Email |
-| **IEEE Xplore** | ⚙️ Planned | Varies | Yes |
-| **OpenAlex** | ⚙️ Planned | 100k/month | No |
+### **Mobile Features**
+- **CSS Grid & Flexbox** - Responsive layouts
+- **Media Queries** - Device-specific styling
+- **Touch Events** - Mobile-optimized interactions
+- **Viewport Meta Tag** - Proper mobile scaling
 
-### 3. **Mock Data System**
-For development and demonstration, the app includes:
-- Realistic paper generation based on search queries
-- Simulated API responses
-- Configurable delay for realistic loading
+## 📱 Mobile Optimization
 
-## 🔧 Customization
+The application has been specifically optimized for mobile devices:
 
-### Changing Colors
-Edit the CSS variables in `style.css`:
-```css
-:root {
-    --primary-color: #2563eb;
-    --secondary-color: #7c3aed;
-    /* Customize other variables */
-}
-```
+| Feature | Mobile Implementation |
+|---------|----------------------|
+| **Touch Targets** | Minimum 44px buttons |
+| **Typography** | Responsive font scaling |
+| **Layout** | Single column on small screens |
+| **Navigation** | Easy thumb reach areas |
+| **Forms** | Mobile-optimized inputs |
+| **Modal** | Full-screen with easy close |
 
-### Adding New APIs
-Extend the `searchRealAPIs` function in `script.js`:
+### **Breakpoints**
+- **Mobile**: < 768px (single column, stacked)
+- **Tablet**: 768px - 1023px (two column layout)
+- **Desktop**: ≥ 1024px (full grid layout)
+
+## 🔧 API Details
+
+### **CrossRef API Integration**
 ```javascript
-async function searchNewAPI(query) {
-    const response = await fetch(
-        `https://api.new-academic-service.com/search?q=${query}`
-    );
-    return await response.json();
+// API Configuration
+{
+    baseUrl: 'https://api.crossref.org/works',
+    mailto: 'your-email@example.com', // Polite usage
+    rows: 20, // Results per page
+    timeout: 10000 // Request timeout
 }
 ```
 
-### Modifying Layout
-- Card structure: `.paper-card` class
-- Search box: `.search-input-group`
-- Filters: `.filter-group` classes
-- Modal: `#paperModal`
+### **Search Parameters**
+- `query`: Search terms
+- `rows`: Results per page (10-50)
+- `sort`: Publication date (newest/oldest)
+- `filter`: Year range filtering
+- `mailto`: Your email for polite usage
 
-## 📱 Responsive Design
-
-The application is fully responsive across all devices:
-
-| Device | Breakpoint | Features |
-|--------|------------|----------|
-| **Desktop** | > 1200px | Full grid layout, expanded filters |
-| **Tablet** | 768px - 1199px | Stacked filters, medium cards |
-| **Mobile** | < 768px | Single column, touch-friendly buttons |
-
-## 🔌 API Integration Guide
-
-### Current Mock Implementation
-The app currently uses mock data. To connect real APIs:
-
-1. **Enable arXiv API** (No key required):
-   ```javascript
-   // Uncomment in script.js
-   async function searchArXiv(query) {
-       const response = await fetch(
-           `https://export.arxiv.org/api/query?search_query=all:${query}&max_results=10`
-       );
-       // Parse XML response
-   }
-   ```
-
-2. **Add API Keys** (for production):
-   Create a `config.js` file:
-   ```javascript
-   const API_KEYS = {
-       CROSSREF_EMAIL: 'your-email@example.com',
-       SEMANTIC_SCHOLAR: 'your-api-key-here'
-   };
-   ```
-
-## 📈 Performance Features
-
-- **Lazy Loading**: Images and content load as needed
-- **Caching**: Search results cached in localStorage
-- **Debounced Search**: Prevents excessive API calls
-- **Minimal Dependencies**: No external libraries required
-- **Optimized Assets**: Efficient CSS and JavaScript
-
-## 🧪 Testing
-
-### Manual Testing Checklist
-- [ ] Search functionality with various queries
-- [ ] Filter application and removal
-- [ ] Mobile responsiveness
-- [ ] Paper modal display
-- [ ] PDF link functionality
-- [ ] Copy DOI feature
-- [ ] Pagination navigation
-- [ ] Browser compatibility
-
-### Browser Support
-- ✅ Chrome 90+
-- ✅ Firefox 88+
-- ✅ Safari 14+
-- ✅ Edge 90+
-- ✅ Mobile browsers
+### **Rate Limits**
+- Approximately 50 requests/second
+- No daily limit for polite usage
+- Always includes your email for tracking
 
 ## 🚀 Deployment
 
-### Deploy on Vercel (Recommended)
+### **Deploy on Vercel (Recommended)**
 1. Fork this repository
 2. Go to [vercel.com](https://vercel.com)
 3. Click "New Project"
 4. Import your GitHub repository
-5. Set project name (must be lowercase, e.g., `research-paper-search`)
+5. Set project name (must be lowercase)
 6. Click "Deploy"
 
-### Deploy on GitHub Pages
+### **Deploy on GitHub Pages**
 1. Push to `gh-pages` branch:
    ```bash
    git subtree push --prefix . origin gh-pages
@@ -220,90 +164,17 @@ The app currently uses mock data. To connect real APIs:
 2. Enable GitHub Pages in repository settings
 3. Access at: `https://yourusername.github.io/Research-Paper-Search-Engine`
 
-## 🤝 Contributing
-
-We welcome contributions! Here's how:
-
-1. **Fork** the repository
-2. **Create** a feature branch:
-   ```bash
-   git checkout -b feature/amazing-feature
-   ```
-3. **Commit** your changes:
-   ```bash
-   git commit -m 'Add amazing feature'
-   ```
-4. **Push** to the branch:
-   ```bash
-   git push origin feature/amazing-feature
-   ```
-5. **Open** a Pull Request
-
-### Development Guidelines
-- Follow existing code style
-- Add comments for complex logic
-- Update documentation as needed
-- Test on multiple browsers
-
-## 📋 Roadmap
-
-### 🟢 Completed
-- [x] Basic search interface
-- [x] Mock data system
-- [x] Responsive design
-- [x] Paper details modal
-- [x] Filter system
-
-### 🟡 In Progress
-- [ ] Real arXiv API integration
-- [ ] Search history feature
-- [ ] Export functionality
-
-### 🔴 Planned
-- [ ] User accounts
-- [ ] Saved papers library
-- [ ] Citation generator
-- [ ] Advanced analytics
-- [ ] More API integrations
-- [ ] Dark mode toggle
-- [ ] Offline capability
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-1. **Search not working**
-   - Check JavaScript console for errors
-   - Verify internet connection
-   - Clear browser cache
-
-2. **Layout issues**
-   - Check CSS loading
-   - Verify viewport meta tag
-   - Test in different browsers
-
-3. **API integration fails**
-   - Check CORS headers
-   - Verify API key/email
-   - Review rate limits
-
-### Debug Mode
-Enable debug logging in browser console:
-```javascript
-localStorage.setItem('debug', 'true');
-```
-
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 
-- Academic databases for providing API access
-- Contributors and testers
-- Open source community for inspiration
-- Font Awesome for icons
-- Google Fonts for typography
+- **CrossRef** for providing free API access to academic papers
+- **Vercel** for hosting and deployment
+- **Font Awesome** for icons
+- **Google Fonts** for typography
+- **Open source community** for inspiration
 
 ## 📞 Support
 
@@ -328,8 +199,9 @@ If you find this project useful:
 
 <div align="center">
   
-### 🚀 Ready to Search?
+### 🚀 Ready to Search Academic Papers?
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FVishwajeet-2005%2FResearch-Paper-Search-Engine)
 [![Try it Live](https://img.shields.io/badge/Try_it_Live-Online-brightgreen?style=for-the-badge&logo=vercel)](https://research-paper-search.vercel.app)
 
 </div>
+```
