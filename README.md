@@ -204,4 +204,24 @@ If you find this project useful:
 [![Try it Live](https://img.shields.io/badge/Try_it_Live-Online-brightgreen?style=for-the-badge&logo=vercel)](https://research-paper-search.vercel.app)
 
 </div>
-```
+
+---
+
+
+## 🔄 Recent Updates
+
+**v1.0.0** (Current)
+- ✅ Full CrossRef API integration with real data
+- ✅ Mobile-first responsive design
+- ✅ Touch-optimized interface
+- ✅ Complete search functionality
+- ✅ Production-ready deployment
+
+**Planned Features**
+- [ ] Dark mode toggle
+- [ ] Advanced search operators
+- [ ] Paper bookmarking
+- [ ] Export results (BibTeX, CSV)
+- [ ] Multiple API integration (arXiv, PubMed)
+
+---
